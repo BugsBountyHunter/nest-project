@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import { Request } from 'express';
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
@@ -71,13 +72,13 @@ describe('UsersController', () => {
   });
 
   it('signin updates session object and returns user', async () => {
-    const session = { userId: -10 };
+    const request = { session: { userId: -10 } } as unknown as Request;
     const user = await controller.signin(
       { email: 'asdf@asdf.com', password: 'asdf' },
-      session,
+      request,
     );
 
     expect(user.id).toEqual(1);
-    expect(session.userId).toEqual(1);
+    expect(request.session.userId).toEqual(1);
   });
 });
