@@ -48,12 +48,19 @@ import cookieSession from 'cookie-session';
   ],
 })
 export class AppModule {
+  constructor(private readonly configService: ConfigService) {}
+
   configure(consumer: MiddlewareConsumer) {
+    const cookieKey = this.configService.get<string>('COOKIE_KEY');
+    if (!cookieKey) {
+      throw new Error('COOKIE_KEY environment variable is required');
+    }
+
     consumer
       .apply(
         cookieSession({
           name: 'session',
-          keys: ['asdfasfd'],
+          keys: [cookieKey],
           maxAge: 24 * 60 * 60 * 1000, // 24 hours
         }),
       )

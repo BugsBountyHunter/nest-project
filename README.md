@@ -12,7 +12,7 @@ A NestJS REST API where signed-in users submit **used-car sale reports** (make, 
 - **`AuthGuard` and a `@CurrentUser()` decorator.** An interceptor loads the signed-in user onto the request, so protected routes stay clean.
 - **A custom `@Serialize(Dto)` interceptor** that strips sensitive fields, such as the password hash, from every response.
 - **Validation** with `class-validator`, for example year between 1930 and 2050, valid latitude/longitude, and bounded mileage and price.
-- **Per-environment configuration**: `.env.development` and `.env.test` point at separate SQLite databases.
+- **Per-environment configuration**: `.env.development` and `.env.test` point at separate SQLite databases, and the cookie signing key is loaded from the environment.
 - **Unit tests** for services and controllers, with mocked dependencies.
 
 ## API
@@ -47,12 +47,22 @@ There are ready-to-run requests in `src/users/requests.http` and `src/reports/re
 
 ```bash
 npm install
+
+# Create one env file per environment from the template,
+# then set DB_NAME (e.g. test.sqlite in .env.test) and a random COOKIE_KEY in each
+cp .env.example .env.development
+cp .env.example .env.test
+
 npm run start:dev      # NODE_ENV=development → http://localhost:3000
-npm test               # NODE_ENV=test
+npm test               # unit tests
+npm run test:e2e       # end-to-end tests (NODE_ENV=test)
 ```
+
+The app refuses to start if `COOKIE_KEY` is missing. Env files and SQLite databases are git-ignored.
 
 ## Roadmap
 
 - [ ] Price estimate endpoint (the average of similar reports by make, model, location and mileage)
 - [ ] Admin approval of reports
-- [ ] Move the cookie-session key to environment config, and switch to Postgres with migrations for production
+- [x] Load the cookie-session key from environment config
+- [ ] Switch to Postgres with migrations for production

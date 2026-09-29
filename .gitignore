@@ -37,3 +37,7 @@ lerna-debug.log*
 
 # env
 .env
+# local env files and SQLite databases
+.env.*
+!.env.example
+*.sqlite
