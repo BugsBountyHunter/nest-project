@@ -1,73 +1,58 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Used Car Pricing API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS REST API where signed-in users submit **used-car sale reports** (make, model, year, mileage, location, price). It covers session-based authentication, route guards and response serialization.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![SQLite](https://img.shields.io/badge/TypeORM-SQLite-003B57?logo=sqlite)
 
-## Description
+## Highlights
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Hand-rolled authentication.** Passwords are hashed with Node's `scrypt` and a random salt. Sign-in state is kept in a signed cookie session.
+- **`AuthGuard` and a `@CurrentUser()` decorator.** An interceptor loads the signed-in user onto the request, so protected routes stay clean.
+- **A custom `@Serialize(Dto)` interceptor** that strips sensitive fields, such as the password hash, from every response.
+- **Validation** with `class-validator`, for example year between 1930 and 2050, valid latitude/longitude, and bounded mileage and price.
+- **Per-environment configuration**: `.env.development` and `.env.test` point at separate SQLite databases.
+- **Unit tests** for services and controllers, with mocked dependencies.
 
-## Installation
+## API
 
-```bash
-$ npm install
+### Auth — `/auth`
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/auth/signup` | – | Create an account and start a session |
+| `POST` | `/auth/signin` | – | Sign in |
+| `POST` | `/auth/signout` | – | End the session |
+| `GET` | `/auth/whoami` | ✅ | Current user |
+| `GET` | `/auth/:id` | – | Find a user by ID |
+| `GET` | `/auth?email=` | – | Find users by email |
+| `PATCH` | `/auth/:id` | – | Update a user |
+| `DELETE` | `/auth/:id` | – | Delete a user |
+
+### Reports — `/reports`
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/reports` | ✅ | Submit a used-car sale report |
+
+```json
+{ "make": "toyota", "model": "corolla", "year": 2015,
+  "mileage": 100000, "lng": 0, "lat": 0, "price": 12000 }
 ```
 
-## Running the app
+There are ready-to-run requests in `src/users/requests.http` and `src/reports/request.http` (for the VS Code REST Client).
+
+## Getting started
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
+npm run start:dev      # NODE_ENV=development → http://localhost:3000
+npm test               # NODE_ENV=test
 ```
 
-## Test
+## Roadmap
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+- [ ] Price estimate endpoint (the average of similar reports by make, model, location and mileage)
+- [ ] Admin approval of reports
+- [ ] Move the cookie-session key to environment config, and switch to Postgres with migrations for production
